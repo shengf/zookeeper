@@ -320,6 +320,7 @@ public class QuorumHierarchical implements QuorumVerifier {
     
     /**
      * Verifies if a given set is a quorum.
+     * sf: 判断是否达到大多数投票
      */
     public boolean containsQuorum(Set<Long> set){
         HashMap<Long, Long> expansion = new HashMap<Long, Long>();

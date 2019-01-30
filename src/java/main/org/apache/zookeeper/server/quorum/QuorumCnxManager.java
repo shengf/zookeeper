@@ -525,7 +525,7 @@ public class QuorumCnxManager {
                 }
             }
 
-            if (sid == QuorumPeer.OBSERVER_ID) {
+            if (sid == QuorumPeer.OBSERVER_ID) { // sf: 连接过来的是一个观察者
                 /*
                  * Choose identifier at random. We need a value to identify
                  * the connection.
@@ -842,6 +842,7 @@ public class QuorumCnxManager {
                 try {
                     ss = new ServerSocket();
                     ss.setReuseAddress(true);
+                    // sf: 默认false
                     if (self.getQuorumListenOnAllIPs()) {
                         int port = self.getElectionAddress().getPort();
                         addr = new InetSocketAddress(port);
@@ -855,7 +856,9 @@ public class QuorumCnxManager {
                     setName(addr.toString());
                     ss.bind(addr);
                     while (!shutdown) {
+                        // sf: 阻塞，直到有请求到达
                         client = ss.accept();
+                        // sf: 设置socket连接属性
                         setSockOpts(client);
                         LOG.info("Received connection request "
                                 + client.getRemoteSocketAddress());

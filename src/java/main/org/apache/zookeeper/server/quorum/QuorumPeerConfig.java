@@ -81,6 +81,7 @@ public class QuorumPeerConfig {
 
     protected int initLimit;
     protected int syncLimit;
+    // 选举算法的类型。默认是3，采用的是FastLeaderElection选举算法
     protected int electionAlg = 3;
     protected int electionPort = 2182;
     protected boolean quorumListenOnAllIPs = false;
@@ -150,7 +151,8 @@ public class QuorumPeerConfig {
         } catch (IllegalArgumentException e) {
             throw new ConfigException("Error processing " + path, e);
         }   
-        
+
+        // 支持动态配置
         if (dynamicConfigFileStr!=null) {
            try {           
                Properties dynamicCfg = new Properties();
@@ -266,7 +268,7 @@ public class QuorumPeerConfig {
                 initLimit = Integer.parseInt(value);
             } else if (key.equals("syncLimit")) {
                 syncLimit = Integer.parseInt(value);
-            } else if (key.equals("electionAlg")) {
+            } else if (key.equals("")) {
                 electionAlg = Integer.parseInt(value);
             } else if (key.equals("quorumListenOnAllIPs")) {
                 quorumListenOnAllIPs = Boolean.parseBoolean(value);

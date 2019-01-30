@@ -444,6 +444,7 @@ public class Leader {
 
             // Start thread that waits for connection requests from
             // new followers.
+            //
             cnxAcceptor = new LearnerCnxAcceptor();
             cnxAcceptor.start();
 
@@ -533,6 +534,7 @@ public class Leader {
                  return;
              }
 
+             // 启动ZeeKeeperServer
              startZkServer();
              
             /**

@@ -280,6 +280,7 @@ public class ClientCnxnSocketNIO extends ClientCnxnSocket {
     
     @Override
     void connect(InetSocketAddress addr) throws IOException {
+        // sf：创建socket长连接
         SocketChannel sock = createSock();
         try {
            registerAndConnect(sock, addr);

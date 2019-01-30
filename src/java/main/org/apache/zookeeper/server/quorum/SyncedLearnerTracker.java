@@ -46,6 +46,7 @@ public class SyncedLearnerTracker {
 
     public boolean hasAllQuorums() {
         for (QuorumVerifierAcksetPair qvAckset : qvAcksetPairs) {
+            // 是否达到大多数投票
             if (!qvAckset.getQuorumVerifier().containsQuorum(qvAckset.getAckset()))
                 return false;
         }

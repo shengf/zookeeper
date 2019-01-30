@@ -392,9 +392,11 @@ public class ClientCnxn {
         readTimeout = sessionTimeout * 2 / 3;
         readOnly = canBeReadOnly;
 
+        // sf：负责将ZooKeeper的请求信息封装成一个Packet,发送给 Server,并维持同Server的心跳
         sendThread = new SendThread(clientCnxnSocket);
+        // sf：负责解析通过通过SendThread得到的Response,之后发送给Watcher::processEvent进行详细的事件处理
         eventThread = new EventThread();
-        this.clientConfig=zooKeeper.getClientConfig();
+        this.clientConfig = zooKeeper.getClientConfig();
     }
 
     public void start() {
@@ -1108,6 +1110,14 @@ public class ClientCnxn {
 
         private static final String RETRY_CONN_MSG =
             ", closing socket connection and attempting reconnect";
+
+        /**
+         * SendThread的主要任务：
+             1. 创建同 Server 之间的 socket 链接
+             2. 判断链接是否超时
+             3. 定时发送心跳任务
+             4. 将ZooKeeper指令发送给Server
+         */
         @Override
         public void run() {
             clientCnxnSocket.introduce(this, sessionId, outgoingQueue);
@@ -1130,6 +1140,7 @@ public class ClientCnxn {
                         } else {
                             serverAddress = hostProvider.next(1000);
                         }
+                        // sf:启动和server的socket连接
                         startConnect(serverAddress);
                         clientCnxnSocket.updateLastSendAndHeard();
                     }
@@ -1170,7 +1181,7 @@ public class ClientCnxn {
                     } else {
                         to = connectTimeout - clientCnxnSocket.getIdleRecv();
                     }
-                    
+                    // sf: 根据上次的连接时间，判断是否超时
                     if (to <= 0) {
                         String warnInfo;
                         warnInfo = "Client session timed out, have not heard from server in "
@@ -1188,6 +1199,7 @@ public class ClientCnxn {
                         		((clientCnxnSocket.getIdleSend() > 1000) ? 1000 : 0);
                         //send a ping request either time is due or no packet sent out within MAX_SEND_PING_INTERVAL
                         if (timeToNextPing <= 0 || clientCnxnSocket.getIdleSend() > MAX_SEND_PING_INTERVAL) {
+                            // sf:发送心跳包
                             sendPing();
                             clientCnxnSocket.updateLastSend();
                         } else {
@@ -1211,6 +1223,7 @@ public class ClientCnxn {
                         to = Math.min(to, pingRwTimeout - idlePingRwServer);
                     }
 
+                    // sf: 将指令信息发送给 Server
                     clientCnxnSocket.doTransport(to, pendingQueue, ClientCnxn.this);
                 } catch (Throwable e) {
                     if (closing) {

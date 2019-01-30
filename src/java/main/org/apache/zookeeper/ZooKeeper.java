@@ -260,6 +260,10 @@ public class ZooKeeper implements AutoCloseable {
      * API.
      */
     static class ZKWatchManager implements ClientWatchManager {
+
+        // 三个HashMap分别对应三种类型的WatchRegistration：
+        // DataWatchRegistration、ExistWatchRegistration、ChildWatchRegistration
+
         private final Map<String, Set<Watcher>> dataWatches =
             new HashMap<String, Set<Watcher>>();
         private final Map<String, Set<Watcher>> existWatches =
@@ -878,6 +882,7 @@ public class ZooKeeper implements AutoCloseable {
                 connectString);
         hostProvider = aHostProvider;
 
+        // sf: client connection
         cnxn = new ClientCnxn(connectStringParser.getChrootPath(),
                 hostProvider, sessionTimeout, this, watchManager,
                 getClientCnxnSocket(), canBeReadOnly);
@@ -2965,6 +2970,11 @@ public class ZooKeeper implements AutoCloseable {
         return cnxn.sendThread.getClientCnxnSocket().getLocalSocketAddress();
     }
 
+    /**
+     * sf: 与server的长连接
+     * @return
+     * @throws IOException
+     */
     private ClientCnxnSocket getClientCnxnSocket() throws IOException {
         String clientCnxnSocketName = getClientConfig().getProperty(
                 ZKClientConfig.ZOOKEEPER_CLIENT_CNXN_SOCKET);

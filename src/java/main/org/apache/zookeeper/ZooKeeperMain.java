@@ -71,7 +71,7 @@ import org.apache.zookeeper.admin.ZooKeeperAdmin;
 
 /**
  * The command line client to ZooKeeper.
- *
+ * client端入口
  */
 @InterfaceAudience.Public
 public class ZooKeeperMain {
@@ -297,6 +297,7 @@ public class ZooKeeperMain {
     public ZooKeeperMain(String args[]) throws IOException, InterruptedException {
         cl.parseOptions(args);
         System.out.println("Connecting to " + cl.getOption("server"));
+        // 同ZooKeeperServer建立连接
         connectToZK(cl.getOption("server"));
     }
 
@@ -329,6 +330,7 @@ public class ZooKeeperMain {
                 String line;
                 Method readLine = consoleC.getMethod("readLine", String.class);
                 while ((line = (String)readLine.invoke(console, getPrompt())) != null) {
+                    // 解析单行命令并执行
                     executeLine(line);
                 }
             } catch (ClassNotFoundException e) {

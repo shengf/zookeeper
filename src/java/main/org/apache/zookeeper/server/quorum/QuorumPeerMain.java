@@ -63,6 +63,10 @@ import org.apache.zookeeper.server.quorum.QuorumPeerConfig.ConfigException;
  * "myid" that contains the server id as an ASCII decimal value.
  *
  */
+
+/**
+ * ZooKeeperServer启动入口
+ */
 @InterfaceAudience.Public
 public class QuorumPeerMain {
     private static final Logger LOG = LoggerFactory.getLogger(QuorumPeerMain.class);
@@ -110,21 +114,25 @@ public class QuorumPeerMain {
     {
         QuorumPeerConfig config = new QuorumPeerConfig();
         if (args.length == 1) {
+            // sf：解析配置文件zoo.cfg
             config.parse(args[0]);
         }
 
         // Start and schedule the the purge task
+        // sf：启动定时器来：自动清理+生成快照
         DatadirCleanupManager purgeMgr = new DatadirCleanupManager(config
                 .getDataDir(), config.getDataLogDir(), config
                 .getSnapRetainCount(), config.getPurgeInterval());
         purgeMgr.start();
 
         if (args.length == 1 && config.isDistributed()) {
+            // sf: 分布式集群模式
             runFromConfig(config);
         } else {
             LOG.warn("Either no config or no quorum defined in config, running "
                     + " in standalone mode");
             // there is only server in the quorum -- run as standalone
+            // sf: 单机启动
             ZooKeeperServerMain.main(args);
         }
     }
@@ -144,6 +152,8 @@ public class QuorumPeerMain {
           ServerCnxnFactory secureCnxnFactory = null;
 
           if (config.getClientPortAddress() != null) {
+              // sf: cnxnFactory默认是NIOServerCnxnFactory，用于创建NIOServerCnxn，
+              //     NIOServerCnxn是ServerCnxn的一个子类，ServerCnxn代表客户端和服务器端之间的一个连接
               cnxnFactory = ServerCnxnFactory.createFactory();
               cnxnFactory.configure(config.getClientPortAddress(),
                       config.getMaxClientCnxns(),
@@ -165,8 +175,10 @@ public class QuorumPeerMain {
           quorumPeer.enableLocalSessionsUpgrading(
               config.isLocalSessionsUpgradingEnabled());
           //quorumPeer.setQuorumPeers(config.getAllMembers());
+          // sf: 选举算法的类型。默认是3，采用的是FastLeaderElection选举算法
           quorumPeer.setElectionType(config.getElectionAlg());
           quorumPeer.setMyid(config.getServerId());
+          // sf: session检查的心跳间隔
           quorumPeer.setTickTime(config.getTickTime());
           quorumPeer.setMinSessionTimeout(config.getMinSessionTimeout());
           quorumPeer.setMaxSessionTimeout(config.getMaxSessionTimeout());
@@ -179,6 +191,7 @@ public class QuorumPeerMain {
               quorumPeer.setLastSeenQuorumVerifier(config.getLastSeenQuorumVerifier(), false);
           }
           quorumPeer.initConfigInZKDatabase();
+          // sf:负责和客户端建立连接和通信
           quorumPeer.setCnxnFactory(cnxnFactory);
           quorumPeer.setSecureCnxnFactory(secureCnxnFactory);
           quorumPeer.setLearnerType(config.getPeerType());

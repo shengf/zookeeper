@@ -72,7 +72,7 @@ public class ZKClientConfig extends ZKConfig {
     @Override
     protected void handleBackwardCompatibility() {
         /**
-         * backward compatibility for properties which are common to both client
+         * backward compatibility for propherties which are common to both client
          * and server
          */
         super.handleBackwardCompatibility();

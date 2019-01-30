@@ -388,8 +388,12 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
             try {
                 while (!stopped) {
                     try {
+                        // 接收读写的事件，并将读写操作交给workerThread进行
                         select();
+                        // 处理新的连接，关注读，并添加NIOServerCnxn
                         processAcceptedConnections();
+                        // select之后会暂时不再关注对应socket的读写事件
+                        // 这里来恢复关注。
                         processInterestOpsUpdateRequests();
                     } catch (RuntimeException e) {
                         LOG.warn("Ignoring unexpected runtime exception", e);
@@ -400,6 +404,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
 
                 // Close connections still pending on the selector. Any others
                 // with in-flight work, let drain out of the work queue.
+                // 退出循环后对连接进行关闭清理
                 for (SelectionKey key : selector.keys()) {
                     NIOServerCnxn cnxn = (NIOServerCnxn) key.attachment();
                     if (cnxn.isSelectable()) {
